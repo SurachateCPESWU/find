@@ -6,6 +6,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 @Service
 public class HttpUtils {
 
@@ -19,6 +22,7 @@ public class HttpUtils {
         this.headers = new HttpHeaders();
         headers.add("Content-Type", "application/x-www-form-urlencoded");
         headers.add("Authorization", "Bearer koijYAP85G5SylvWvLkcSPj6AdTd8JoxNnC1ehQq9el");
+
     }
 
     public String get(String uri) {
@@ -28,9 +32,10 @@ public class HttpUtils {
         return responseEntity.getBody();
     }
 
-    public String post(String uri, String json) {
+    public String post(String uri, String json) throws UnsupportedEncodingException {
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("message",json);
+
+        map.add("message", json);
         HttpEntity<String> requestEntity = new HttpEntity<String>(json, headers);
         ResponseEntity<String> responseEntity = rest.exchange( uri, HttpMethod.POST, requestEntity, String.class);
         this.setStatus(responseEntity.getStatusCode());

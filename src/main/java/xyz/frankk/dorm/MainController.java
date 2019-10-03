@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,8 +26,16 @@ public class MainController {
         List<String> dormList = new ArrayList<>();
 
         for (int i=1; i<=10; i++){
-            Document doc = Jsoup.connect("https://www.renthub.in.th/condo-projects/regent-orchid-talad-plu/"+String.valueOf(i)).get();
-            doc.getElementsByClass("listing_info").forEach(a->{
+            Document doc = Jsoup.connect("https://www.renthub.in.th/search/condo_filter?condo_monthly_price[price_range_1]=1&locale=th&page="+String.valueOf(i)+"&search_price=monthly&temp[zone_id]=3006&pagination=true").header("Accept","text/javascript").get();
+            String tmp = doc.outerHtml();
+            tmp = tmp.replace("\\&quot;","");
+            tmp = tmp.replace("\\n","");
+            tmp = tmp.replace("\\t","");
+            tmp = tmp.replace("\n","");
+            tmp = tmp.replace("\t","");
+            doc = Jsoup.parse(tmp);
+            doc.getElementsByTag("li").forEach(a->{
+                a.getElementsByClass("condo_listing");
                 dormList.add(a.toString());
             });
         }
@@ -49,10 +58,11 @@ public class MainController {
         Map<DormBean,Integer> result = MapUtil.sortByValue(map);
         String res = "";
         int i = 0;
+        httpUtils.post("https://notify-api.line.me/api/notify","message=" + URLEncoder.encode("เริ่ม >>> " + new Date() , "UTF-8"));
         for (DormBean beanTmp : result.keySet()){
             i++;
-            if(i==11)break;
-            httpUtils.post("https://notify-api.line.me/api/notify","message=" + String.valueOf(beanTmp.getPrice())+"  "+beanTmp.getInfo());
+            if(i==21)break;
+            httpUtils.post("https://notify-api.line.me/api/notify","message=" + String.valueOf(beanTmp.getPrice())+"  "+ URLEncoder.encode(beanTmp.getInfo(), "UTF-8"));
         }
 
 
